@@ -4,7 +4,7 @@ info:
   description: Une API pour un site web de gestion des événements du calendrier familial.
   version: 1.0.0
 servers:
-  - url: 'localhost:8000'
+  - url: 'localhost:8000//'
     description: Serveur local de l'API
 paths:
   /events:
