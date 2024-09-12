@@ -1,0 +1,143 @@
+openapi: 3.1.0
+info:
+  title: Calendrier Familiale API
+  description: Une API pour un site web de gestion des événements du calendrier familial.
+  version: 1.0.0
+servers:
+  - url: 'localhost:8000'
+    description: Serveur local de l'API
+paths:
+  /events:
+    get:
+      summary: Retourner la liste des événements
+      responses:
+        '200':
+          description: Liste des événements recuperee avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+      post:
+        summary: Créer un nouvel événement
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        responses:
+          '201':
+            description: Événement créé avec succès
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Event'
+          '400':
+            description: Erreur de validation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+  /events/{id}:
+    get:
+      summary: Recuperer un événement specifique avec son ID
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Événement recuperé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Événement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Mettre à jour un événement par son ID
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '200':
+          description: Événement mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Supprimer un événement par son ID
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Événement supprimé avec succès
+        '404':
+          description: Événement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: c9b2a9c0-f0a5-4d1f-b8c6-c2d8f1b1a6c3
+        title:
+          type: string
+          example: Anniversaire de Sullivan
+        description:
+          type: string
+          example: Cet événement est un anniversaire (celui de Sullivan)
+        date:
+          type: string
+          format: date
+          example: '2003-01-13'
+        location:
+          type: string
+          example: La maison de Sullivan
+        type:
+          type: string
+          enum:
+            - anniversaire
+            - fête
+            - autre
+          example: anniversaire
+      required:
+        - title
+        - date
+        - type
+
+  
