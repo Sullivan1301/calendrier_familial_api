@@ -1,57 +1,92 @@
 openapi: 3.1.0
 info:
-  title: Calendrier Familiale API
+  title: Calendrier Familial API
   description: Une API pour un site web de gestion des événements du calendrier familial.
   version: 1.0.0
 servers:
-  - url: 'localhost:8000//'
+  - url: 'http://localhost:8000'
     description: Serveur local de l'API
 paths:
   /events:
     get:
       summary: Retourner la liste des événements
+      description: Retourne une liste paginée de tous les événements. Peut être filtrée par type ou date.
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - anniversaire
+              - fête
+              - autre
+          description: Filtrer les événements par type
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filtrer les événements par date
       responses:
         '200':
-          description: Liste des événements recuperee avec succès
+          description: Liste des événements récupérée avec succès
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Event'
-      post:
-        summary: Créer un nouvel événement
-        requestBody:
-          required: true
+              example:
+                - id: c9b2a9c0-f0a5-4d1f-b8c6-c2d8f1b1a6c3
+                  title: Anniversaire de Sullivan
+                  description: Cet événement est un anniversaire (celui de Sullivan)
+                  startDate: '2023-10-13T18:00:00Z'
+                  endDate: '2023-10-13T22:00:00Z'
+                  location: La maison de Sullivan
+                  type: anniversaire
+    post:
+      summary: Créer un nouvel événement
+      description: Crée un nouvel événement dans le calendrier familial.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+            example:
+              title: Anniversaire de Sullivan
+              description: Cet événement est un anniversaire (celui de Sullivan)
+              startDate: '2023-10-13T18:00:00Z'
+              endDate: '2023-10-13T22:00:00Z'
+              location: La maison de Sullivan
+              type: anniversaire
+      responses:
+        '201':
+          description: Événement créé avec succès
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
-        responses:
-          '201':
-            description: Événement créé avec succès
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Event'
-          '400':
-            description: Erreur de validation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Error'
+        '400':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /events/{id}:
     get:
-      summary: Recuperer un événement specifique avec son ID
+      summary: Récupérer un événement spécifique avec son ID
+      description: Retourne les détails d'un événement spécifique en utilisant son ID.
       parameters:
-        - name: event_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
+          description: ID de l'événement
       responses:
         '200':
-          description: Événement recuperé avec succès
+          description: Événement récupéré avec succès
           content:
             application/json:
               schema:
@@ -64,18 +99,27 @@ paths:
                 $ref: '#/components/schemas/Error'
     put:
       summary: Mettre à jour un événement par son ID
+      description: Met à jour les détails d'un événement spécifique en utilisant son ID.
       parameters:
-        - name: event_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
+          description: ID de l'événement
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
+            example:
+              title: Anniversaire de Sullivan (mis à jour)
+              description: Cet événement est un anniversaire (celui de Sullivan)
+              startDate: '2023-10-13T18:00:00Z'
+              endDate: '2023-10-13T22:00:00Z'
+              location: La maison de Sullivan
+              type: anniversaire
       responses:
         '200':
           description: Événement mis à jour avec succès
@@ -91,17 +135,71 @@ paths:
                 $ref: '#/components/schemas/Error'
     delete:
       summary: Supprimer un événement par son ID
+      description: Supprime un événement spécifique en utilisant son ID.
       parameters:
-        - name: event_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
+          description: ID de l'événement
       responses:
         '204':
           description: Événement supprimé avec succès
         '404':
           description: Événement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users:
+    post:
+      summary: Créer un nouvel utilisateur
+      description: Crée un nouvel utilisateur dans le système.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              email: sullivan@example.com
+              password: password123
+              name: Sullivan
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /families:
+    post:
+      summary: Créer une nouvelle famille
+      description: Crée un nouveau groupe familial.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Family'
+            example:
+              name: Famille Dupont
+      responses:
+        '201':
+          description: Famille créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+        '400':
+          description: Erreur de validation
           content:
             application/json:
               schema:
@@ -114,19 +212,29 @@ components:
         id:
           type: string
           format: uuid
+          description: Identifiant unique de l'événement
           example: c9b2a9c0-f0a5-4d1f-b8c6-c2d8f1b1a6c3
         title:
           type: string
+          description: Titre de l'événement
           example: Anniversaire de Sullivan
         description:
           type: string
+          description: Description détaillée de l'événement
           example: Cet événement est un anniversaire (celui de Sullivan)
-        date:
+        startDate:
           type: string
-          format: date
-          example: '2003-01-13'
+          format: date-time
+          description: Date et heure de début de l'événement
+          example: '2023-10-13T18:00:00Z'
+        endDate:
+          type: string
+          format: date-time
+          description: Date et heure de fin de l'événement
+          example: '2023-10-13T22:00:00Z'
         location:
           type: string
+          description: Lieu de l'événement
           example: La maison de Sullivan
         type:
           type: string
@@ -134,10 +242,66 @@ components:
             - anniversaire
             - fête
             - autre
+          description: Type de l'événement
           example: anniversaire
       required:
         - title
-        - date
+        - startDate
         - type
-
-  
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de l'utilisateur
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          description: Adresse e-mail de l'utilisateur
+          example: sullivan@example.com
+        password:
+          type: string
+          description: Mot de passe de l'utilisateur
+          example: password123
+        name:
+          type: string
+          description: Nom de l'utilisateur
+          example: Sullivan
+      required:
+        - email
+        - password
+    Family:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de la famille
+          example: 550e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          description: Nom de la famille
+          example: Famille Dupont
+      required:
+        - name
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: Code HTTP de l'erreur
+          example: 400
+        message:
+          type: string
+          description: Message d'erreur détaillé
+          example: "Erreur de validation : le champ 'title' est requis."
+        timestamp:
+          type: string
+          format: date-time
+          description: Date et heure de l'erreur
+          example: '2023-10-13T12:00:00Z'
+      required:
+        - status
+        - message
